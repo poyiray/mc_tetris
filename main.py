@@ -5,14 +5,14 @@ from copy import copy, deepcopy
 from shape import shape, color, name
 
 pygame.init()
-screen = pygame.display.set_mode((400, 800))
+screen = pygame.display.set_mode((500, 800))
 clock = pygame.time.Clock()
+font = pygame.font.Font("Minecraft.ttf", 30)
 
 #向下位移10格，预留一些位置
 top = 10
 bottom = 30
 width = 10
-
 length = 30
 
 class Cell():
@@ -45,8 +45,14 @@ class Grid():
                     m[j + 1] = deepcopy(m[j])
                 self.clear(m[top])
 
+    def draw_interface(self):
+        pygame.draw.rect(screen, 'black', pygame.Rect(325, 60, 150, 600), 2)
+        text = font.render("NEXT", True, 'white')
+        screen.blit(text, (360, 30))
+
+
     def draw_backgound(self):
-        imp = pygame.image.load("playgound.png").convert()
+        imp = pygame.image.load("./images/playgound.png").convert()
         screen.blit(imp, (0, 2 * length))
 
     def draw(self):
@@ -58,7 +64,7 @@ class Grid():
 
 class Rules():
     def __init__(self):
-        self.t = Timer(600)
+        self.t = Timer(800)
 
     def is_over(self):
         #上方如果堆积了方块就是越界了
@@ -107,10 +113,12 @@ class Rules():
 #Tetrominoes
 class Tetro():
     t_s = Timer(250)
+    queue = []
     def __init__(self, pos_x, pos_y):
         self.rule = Rules()
+        self.speed_v = 400
         self.t_h = Timer(100)
-        self.t_v = Timer(200) # 600
+        self.t_v = Timer(self.speed_v) # 600
         self.t_r = Timer(245)
         # T Z S J L I O
         self.name = random.choice(name)
@@ -146,7 +154,7 @@ class Tetro():
             return self.rule.fixed(self.struct, self.name, self.x, self.y) 
 
     def iput(self):
-        d = pygame.key.get_pressed()        
+        d = pygame.key.get_pressed()
         if(d[pygame.K_d] - d[pygame.K_a]) and not self.t_h.active:
             self.move_h(d[pygame.K_d] - d[pygame.K_a])
             self.t_h.activate()
@@ -157,6 +165,10 @@ class Tetro():
             Tetro.t_s.activate()
             self.y = deepcopy(self.y_t)
             self.rule.t.duration = 0
+        elif(d[pygame.K_w]):
+            self.t_v.duration = self.speed_v * 0.2
+        elif(not d[pygame.K_w]):
+            self.t_v.duration = self.speed_v
 
     def move_h(self, d):
         if self.rule.collision_h(self.struct, self.x, self.y, d): return
@@ -184,36 +196,40 @@ class Tetro():
         while(not rule.collision(self.struct, self.x, self.y_t)):
             self.y_t = [[val + 1 for val in row] for row in self.y_t]
         self.y_t = [[val - 1 for val in row] for row in self.y_t]
-        self.draw((190, 190, 190), self.x, self.y_t);
+        self.draw((190, 190, 190), 150, self.x, self.y_t);
 
-    def draw(self, color, x, y):
+    def draw(self, color, alpha, x, y):
         for i in range(len(self.struct)):
             for j in range(len(self.struct[i])):
                 if(self.struct[i][j]):
-                    pygame.draw.rect(screen, color, (x[i][j] * length + 1, (y[i][j] - top + 2) * length + 1, length - 2, length - 2))
+                    s = pygame.Surface((length - 2, length - 2))
+                    s.set_alpha(alpha)
+                    s.fill(color)
+                    screen.blit(s, (x[i][j] * length + 1, (y[i][j] - top + 2) * length + 1))
+                   # pygame.draw.rect(screen, color, (x[i][j] * length + 1, (y[i][j] - top + 2) * length + 1, length - 2, length - 2))
 
 tetro = Tetro(4,top - 2)
 grid = Grid()
 rule = Rules()
+
 while True:
     for event in pygame.event.get():
         if event.type == pygame.QUIT: exit()
     screen.fill("gray")
 
     key = pygame.key.get_pressed()
+    grid.draw_interface()
     grid.draw_backgound()
     grid.draw()
     tetro.pre_view()
-    tetro.draw(tetro.color, tetro.x, tetro.y)
+    tetro.draw(tetro.color, 255, tetro.x, tetro.y)
     if tetro.update():
         del tetro
         tetro = Tetro(4,top - 2)
     tetro.iput()
     grid.update()
 
-
     if rule.is_over():
         exit()
-
     pygame.display.update()
     clock.tick()
