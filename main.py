@@ -1,37 +1,19 @@
 import pygame
 import random
+from srs import collision, collision_SRS
 from timer import Timer
-from copy import copy, deepcopy
-from shape import shape, color, name
-
-pygame.init()
-screen = pygame.display.set_mode((500, 800))
-clock = pygame.time.Clock()
-font = pygame.font.Font("Minecraft.ttf", 30)
-
-#向下位移10格，预留一些位置
-top = 10
-bottom = 30
-width = 10
-length = 30
-
-class Cell():
-    def __init__(self, name = "empty", form = 0):
-        self.name = name
-        self.form = form
-
-    def __bool__(self):
-        return self.name != "empty"
-
-m = [[Cell() for i in range(10)] for j in range(31)]
+from copy import deepcopy
+from shape import typ, pos, name
+from basic import top, bottom, width, screen, clock, length, font, m
+import test
 
 class Grid():
     #消行
     def clear(self, arr):
-        for i in range(len(arr)): arr[i] = Cell()
+        for i in range(len(arr)): arr[i] = 0
     
     def update(self):
-        for i in range(top, bottom + 1):
+        for i in range(top, bottom):
             f = True
             for j in range(width):
                 #如果不是满行
@@ -50,17 +32,17 @@ class Grid():
         text = font.render("NEXT", True, 'white')
         screen.blit(text, (360, 30))
 
-
     def draw_backgound(self):
-        imp = pygame.image.load("./images/playgound.png").convert()
+        imp = pygame.image.load("./images/playgound.png")#.convert()
         screen.blit(imp, (0, 2 * length))
 
     def draw(self):
-        for i in range(top, bottom + 1):
+        for i in range(top, bottom):
             for j in range(width):
-                if m[i][j]:
-                    #画出一个正方形 其中包括方块的颜色，x轴y轴的位置，和长度宽度
-                    pygame.draw.rect(screen, color[m[i][j].name], (j * length + 1, (i - top + 2) * length + 1, length - 2, length - 2))
+                if isinstance(m[i][j], int) and m[i][j] == 1:
+                    pygame.draw.rect(screen, 'red', (j * length + 1, (i - top + 2) * length + 1, 28, 28))
+                elif m[i][j]:
+                    m[i][j].draw(j * length + 1, (i - top + 2) * length + 1)
 
 class Rules():
     def __init__(self):
@@ -73,68 +55,55 @@ class Rules():
                 if m[i][j]: return True
         return False
     
-    def collision_v(self, struct, x, y, d = 1):
-        for i in range(len(struct)):
-            for j in range(len(struct[i])):
-                if not struct[i][j]: continue;
-                if y[i][j] + 1 >= bottom or m[y[i][j] + 1][x[i][j]]:
-                    self.t.activate()
-                    return True
+    def collision_v(self, x, y):
+        for i in range(len(y)):
+            if y[i] + 1 >= bottom or m[y[i] + 1][x[i]]:
+                self.t.activate()
+                return True
         self.t.deactivate()
         return False
 
-    def collision_h(self, struct, x, y, d):
-        for i in range(len(struct)):
-            for j in range(len(struct[i])):
-                if not struct[i][j]: continue
-                if x[i][j] + d < 0 or x[i][j] + d >= width: return True
-                if m[y[i][j]][x[i][j] + d]: return True
-        return False       
-    
-    def collision(self, struct, x, y):
-        self.tmp_x = deepcopy(x)
-        for i in range(len(struct)):
-            for j in range(len(struct[i])):
-                if not struct[i][j]: continue
-                if x[i][j] < 0 or x[i][j] >= width: return True
-                if y[i][j] < 0 or y[i][j] >= bottom: return True
-                if m[y[i][j]][x[i][j]]: return True
+    def collision_h(self, x, y, d):
+        for i in range(len(x)):
+            if x[i] + d < 0 or x[i] + d >= width or m[y[i]][x[i] + d]:
+                return True
         return False
     
-    def fixed(self, struct, name, x, y):
+    def fixed(self, box, x, y):
         if not self.t.check(): return False
         self.t.deactivate()
-        for i in range(len(struct)):
-            for j in range(len(struct[i])):
-                if struct[i][j]:
-                    m[y[i][j]][x[i][j]] = Cell(name)
+        for i in range(len(x)):
+            m[y[i]][x[i]] = deepcopy(box[i])
         return True
 
 #Tetrominoes
 class Tetro():
     t_s = Timer(250)
-    queue = []
     def __init__(self, pos_x, pos_y):
         self.rule = Rules()
-        self.speed_v = 400
+        self.speed_v = 1000
         self.t_h = Timer(100)
         self.t_v = Timer(self.speed_v) # 600
-        self.t_r = Timer(245)
-        # T Z S J L I O
+        self.t_r = Timer(240)
+
+        self.pos_x = pos_x
+        self.pos_y = pos_y
+        
         self.name = random.choice(name)
-        #self.name = 'I'
+        #self.name = "I"
+        self.typ = random.choice(typ)()
+        self.state = 0
+        self.x = []
+        self.y = []
+        self.box = []
+        
+        for i in range(4):
+            self.box.append(deepcopy(self.typ))
 
-        #拿出对应的颜色 结构 并且构建一个方块数组，储存cell类
-        self.struct = deepcopy(shape[self.name])
-        self.color = deepcopy(color[self.name])
-        self.x = deepcopy(self.struct)
-        self.y = deepcopy(self.struct)
+        for i in range(4):
+            self.x.append(pos_x + pos[self.name][self.state][i][0])
+            self.y.append(pos_y + pos[self.name][self.state][i][1])
         self.y_t = deepcopy(self.y)
-
-        for i in range(len(self.struct)):
-            for j in range(len(self.struct[i])):
-                self.x[i][j] = pos_x + j
-                self.y[i][j] = pos_y + i - len(self.struct) + 1
 
     def update(self):
         if not self.t_v.active:
@@ -150,11 +119,12 @@ class Tetro():
         if self.t_r.check():
             self.t_r.deactivate()
         
-        if self.rule.collision_v(self.struct, self.x, self.y): 
-            return self.rule.fixed(self.struct, self.name, self.x, self.y) 
+        if self.rule.collision_v(self.x, self.y): 
+            return self.rule.fixed(self.box, self.x, self.y) 
 
     def iput(self):
         d = pygame.key.get_pressed()
+
         if(d[pygame.K_d] - d[pygame.K_a]) and not self.t_h.active:
             self.move_h(d[pygame.K_d] - d[pygame.K_a])
             self.t_h.activate()
@@ -163,7 +133,7 @@ class Tetro():
             self.t_r.activate()
         elif(d[pygame.K_s] and not Tetro.t_s.active):
             Tetro.t_s.activate()
-            self.y = deepcopy(self.y_t)
+            self.y = self.y_t
             self.rule.t.duration = 0
         elif(d[pygame.K_w]):
             self.t_v.duration = self.speed_v * 0.2
@@ -171,42 +141,29 @@ class Tetro():
             self.t_v.duration = self.speed_v
 
     def move_h(self, d):
-        if self.rule.collision_h(self.struct, self.x, self.y, d): return
-        self.x = [[val + d for val in row] for row in self.x]
+        if self.rule.collision_h(self.x, self.y, d): return
+        self.pos_x += d
+        self.x = [val + d for val in self.x]
 
     def move_v(self):
-        if self.rule.collision_v(self.struct, self.x, self.y): return
-        self.y = [[val + 1 for val in row] for row in self.y]
+        if self.rule.collision_v(self.x, self.y): return
+        self.pos_y += 1
+        self.y = [val + 1 for val in self.y]
 
     def rotate(self, d):
-        tmp = deepcopy(self.struct)
-        
-        for i in range(len(self.struct)):
-            for j in range(i):
-                self.struct[i][j], self.struct[j][i] = self.struct[j][i], self.struct[i][j];
-        if d == -1: 
-            self.struct = self.struct[::-1]
-        elif d == 1:
-            self.struct = [row[::-1] for row in self.struct]
-        if rule.collision(self.struct, self.x, self.y):
-            self.struct = deepcopy(tmp)
+        if self.name != 'O':
+            collision_SRS(self, d)
 
     def pre_view(self):
-        self.y_t = deepcopy(self.y)
-        while(not rule.collision(self.struct, self.x, self.y_t)):
-            self.y_t = [[val + 1 for val in row] for row in self.y_t]
-        self.y_t = [[val - 1 for val in row] for row in self.y_t]
-        self.draw((190, 190, 190), 150, self.x, self.y_t);
+        self.y_t = self.y
+        while(not collision(self.x, self.y_t)):
+            self.y_t = [val + 1 for val in self.y_t]
+        self.y_t = [val - 1 for val in self.y_t]
+        self.draw(90, self.x, self.y_t);
 
-    def draw(self, color, alpha, x, y):
-        for i in range(len(self.struct)):
-            for j in range(len(self.struct[i])):
-                if(self.struct[i][j]):
-                    s = pygame.Surface((length - 2, length - 2))
-                    s.set_alpha(alpha)
-                    s.fill(color)
-                    screen.blit(s, (x[i][j] * length + 1, (y[i][j] - top + 2) * length + 1))
-                   # pygame.draw.rect(screen, color, (x[i][j] * length + 1, (y[i][j] - top + 2) * length + 1, length - 2, length - 2))
+    def draw(self, alpha, x, y):
+        for i in range(len(x)):
+            self.box[i].draw(x[i] * length + 1, (y[i] - top + 2) * length + 1, alpha)
 
 tetro = Tetro(4,top - 2)
 grid = Grid()
@@ -222,7 +179,7 @@ while True:
     grid.draw_backgound()
     grid.draw()
     tetro.pre_view()
-    tetro.draw(tetro.color, 255, tetro.x, tetro.y)
+    tetro.draw(255, tetro.x, tetro.y)
     if tetro.update():
         del tetro
         tetro = Tetro(4,top - 2)
