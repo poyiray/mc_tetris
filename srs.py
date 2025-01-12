@@ -41,9 +41,7 @@ def collision_SRS(tetro, d):
          state_t = (state - (d == -1) * 2) % 4
          if name == 'L' or name == 'J': a_t = L_t
          elif name == 'S' or name == 'Z': a_t = S_t
-         elif name == 'T':
-              a_t = T_t
-              d = 1
+         elif name == 'T': a_t = T_t
     else:
          if d == 1: a_t = I_r_t
          else: a_t = I_l_t
