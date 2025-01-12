@@ -10,7 +10,7 @@ class Tetro():
     t_s = Timer(250)
     def __init__(self, info, pos_x, pos_y):
         self.rule = Rules()
-        self.speed_v = 500
+        self.speed_v = 600
         self.t_h = Timer(100)
         self.t_v = Timer(self.speed_v) # 600
         self.t_r = Timer(240)
@@ -93,8 +93,10 @@ class Tetro():
         while(not collision(self.x, self.y_t)):
             self.y_t = [val + 1 for val in self.y_t]
         self.y_t = [val - 1 for val in self.y_t]
-        self.draw(115, self.x, self.y_t);
 
-    def draw(self, alpha, x, y):
-        for i in range(len(x)):
-            self.box[i].draw(x[i] * length + 1 + margin_l, (y[i] - top + 2) * length + 1, alpha)
+        for i in range(len(self.x)):
+            self.box[i].draw(self.x[i] * length + 1 + margin_l, (self.y_t[i] - top + 2) * length + 1, 115)
+
+    def draw(self, alpha):
+        for i in range(len(self.x)):
+            self.box[i].draw(self.x[i] * length + 1 + margin_l, (self.y[i] - top + 2) * length + 1, alpha)

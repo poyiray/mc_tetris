@@ -1,7 +1,7 @@
 from copy import deepcopy
 from basic import m
 
-test =    [[0,0,0,0,0,0,0,0,0,0],
+emp =    [[0,0,0,0,0,0,0,0,0,0],
            [0,0,0,0,0,0,0,0,0,0],
            [0,0,0,0,0,0,0,0,0,0],
            [0,0,0,0,0,0,0,0,0,0],
@@ -32,6 +32,6 @@ test =    [[0,0,0,0,0,0,0,0,0,0],
            [0,0,0,0,0,0,0,0,0,0],
            [0,0,0,0,0,0,0,0,0,0],]
 
-for i in range(len(test)):
-    for j in range(len(test[i])):
-        m[i][j] = test[i][j]
+for i in range(len(emp)):
+    for j in range(len(emp[i])):
+        m[i][j] = emp[i][j]
