@@ -69,7 +69,6 @@ class Game():
 
             pygame.display.update()
             clock.tick()
-            
 
     def draw(self):
         for i in range(top, bottom):

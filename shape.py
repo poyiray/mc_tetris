@@ -1,6 +1,6 @@
 import pygame
 import random
-from basic import m, screen
+from basic import m, screen, top, bottom, width
 name = ['I', 'T', 'J', 'O', 'Z', 'S', 'L']
 
 pos = {'I':[[(-1, 0), (0, 0), (1, 0), (2, 0)],
@@ -65,15 +65,52 @@ block_sound_idx = [1, 1, 1, 1, 1, 2, 1, 2, 1, 2, 1, 0, 1, 1, 0, 1, 1]
 trunk = [pygame.image.load("./Textures/Birch.webp"),
          pygame.image.load("./Textures/Oak.webp")]
 
+redstone_lamp = [pygame.image.load("./Textures/Off_Redstone_Lamp.webp"),
+                 pygame.image.load("./Textures/On_Redstone_Lamp.webp")]
+
 trunk_sound_idx = [2, 2]
 
-class Tnt():
-    def __init__(self):
-        self.frame = 0
+dx = [-1, 0, 1, 0]
+dy = [0, -1, 0, 1]
 
+class Block():
     def __bool__(self):
         return True
+    def sound(self):
+        pass
+    def draw(self):
+        pass
+    def update(self, x, y):
+        pass
+    def edge_x(self, x):
+        return min(width - 1, max(0, x))
+    def edge_y(self, y):
+        return min(bottom - 1, max(top, y))
+
+class Redstone_Lamp(Block):
+    def __init__(self):
+        self.state = 0
     
+    def draw(self, x, y, alpha = 255):
+        image = redstone_lamp[self.state]
+        image.set_alpha(alpha)
+        screen.blit(image, (x,y))
+
+    def update(self, x, y):
+        for i in range(4):
+            a = self.edge_x(x + dx[i])
+            b = self.edge_y(y + dy[i])
+            if isinstance(m[b][a], Redstone):
+                self.state = 1
+                break
+
+class Redstone(Block):    
+    def draw(self, x, y, alpha = 255):
+        image = pygame.image.load("./Textures/Redstone.webp")
+        image.set_alpha(alpha)
+        screen.blit(image, (x,y))
+
+class Tnt(Block):
     def draw(self, x, y, alpha = 255):
         image = pygame.image.load("./Textures/TNT.webp")
         image.set_alpha(alpha)
@@ -82,14 +119,9 @@ class Tnt():
     def sound(self):
         pygame.mixer.Sound("./sound/Grass_dig3.mp3").play()
 
-
-class Block():
+class Blocks(Block):
     def __init__(self):
         self.typ = random.randrange(len(blocks))
-        self.frame = 0
-
-    def __bool__(self):
-        return True
     
     def draw(self, x, y, alpha = 255):
         image = blocks[self.typ]
@@ -99,13 +131,9 @@ class Block():
     def sound(self):
         sounds[block_sound_idx[self.typ]].play()
 
-class Tree():
+class Tree(Block):
     def __init__(self):
         self.typ = random.randrange(len(trunk))
-        self.frame = 0
-
-    def __bool__(self):
-        return True
     
     def draw(self, x, y, alpha = 255):
         image = trunk[self.typ]
@@ -115,5 +143,5 @@ class Tree():
     def sound(self):
         sounds[trunk_sound_idx[self.typ]].play()
 
-typ = [Tnt, Block, Tree]
-weight = [0.1, 0.7, 0.2]
+typ = [Tnt, Blocks, Tree, Redstone, Redstone_Lamp]
+weight = [0.05, 0.7, 0.1, 0.05, 0.1]

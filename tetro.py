@@ -19,7 +19,7 @@ class Tetro():
         self.pos_y = pos_y
         
         self.name = info[0]
-        #self.name = "S"
+        #self.name = "I"
         self.typ = info[1]()
         self.state = 0
         self.x = []

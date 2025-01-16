@@ -15,6 +15,11 @@ class Rules():
     
     def update(self):
         for i in range(top, bottom):
+            for j in range(width):
+                if m[i][j]:
+                    m[i][j].update(j, i)
+
+        for i in range(top, bottom):
             f = True
             for j in range(width):
                 if not m[i][j]: 
@@ -23,7 +28,7 @@ class Rules():
             if f:
                 pygame.mixer.Channel(1).play(self.exp)
                 self.score += 10
-                self.speed -= 5
+                self.speed -= 3
                 for j in range(i - 1, top - 1, -1):
                     m[j + 1] = deepcopy(m[j])
                 self.clear(m[top])
