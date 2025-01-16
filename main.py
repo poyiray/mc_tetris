@@ -73,9 +73,10 @@ class Game():
     def draw(self):
         for i in range(top, bottom):
             for j in range(width):
+                if isinstance(m[i][j], int) and not m[i][j]: continue
                 if isinstance(m[i][j], int) and m[i][j] == 1:
                     pygame.draw.rect(screen, 'red', (j * length + 1 + margin_l, (i - top + 2) * length + 1, 28, 28))
-                elif m[i][j]:
+                else:
                     m[i][j].draw(j * length + 1 + margin_l, (i - top + 2) * length + 1)
 
 game = Game(music)

@@ -2,7 +2,7 @@ import pygame
 from timer import Timer
 from rule import Rules
 from copy import deepcopy
-from shape import pos
+from shape import pos, Fire
 from basic import length, top, margin_l
 from srs import collision, collision_SRS
 #Tetrominoes
@@ -11,7 +11,7 @@ class Tetro():
     def __init__(self, info, pos_x, pos_y):
         self.rule = Rules()
         self.speed_v = 600
-        self.t_h = Timer(100)
+        self.t_h = Timer(115)
         self.t_v = Timer(self.speed_v) # 600
         self.t_r = Timer(240)
 
@@ -21,6 +21,7 @@ class Tetro():
         self.name = info[0]
         #self.name = "I"
         self.typ = info[1]()
+        #self.typ = Fire()
         self.state = 0
         self.x = []
         self.y = []

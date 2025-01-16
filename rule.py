@@ -16,7 +16,8 @@ class Rules():
     def update(self):
         for i in range(top, bottom):
             for j in range(width):
-                if m[i][j]:
+                if isinstance(m[i][j], int) and not m[i][j]: continue
+                if not isinstance(m[i][j], int):
                     m[i][j].update(j, i)
 
         for i in range(top, bottom):
