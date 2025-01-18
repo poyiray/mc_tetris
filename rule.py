@@ -30,14 +30,14 @@ class Rules():
                 if not m[i][j]: 
                     f = False
                     break
-            if f: #if there xist a line that is full, the elimination will be performed 
+            if f: #if there exist a line that is full, the elimination will be performed 
                 self.score += 10 #score will add up by 10
 
                 #the sound effect for the elimination
                 if not self.score % 100:
-                    pygame.mixer.Channel(1).play(self.level_up)
+                    pygame.mixer.Channel(2).play(self.level_up)
                 else:
-                    pygame.mixer.Channel(1).play(self.exp)
+                    pygame.mixer.Channel(1).play(self.exp)                    
 
                 self.speed = max(100, self.speed - 3) #the speed will increase
                 for j in range(i - 1, top - 1, -1): #the lines from the above will be shifted down
