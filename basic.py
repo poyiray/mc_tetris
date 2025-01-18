@@ -1,3 +1,4 @@
+#here store basic variables, musics, fonts, and map of the game
 import pygame
 pygame.init()
 screen = pygame.display.set_mode((500, 800))

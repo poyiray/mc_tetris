@@ -2,6 +2,7 @@ from shape import pos
 from copy import deepcopy
 from basic import bottom, width, m
 
+#Tetromino Wall Kick Data
 L_t = [[(0,0),(-1,0),(-1,-1),(0,2),(-1,2)],
        [(0,0),(1,0),(1,1),(0,-2),(1,-2)],
        [(0,0),(1,0),(1,-1),(0,2),(1,2)],
@@ -27,12 +28,15 @@ I_l_t= [[(0,0),(-1,0),(2,0),(-1,-2),(2,1)],
         [(0,0),(1,0),(-2,0),(1,2),(-2,-1)],
         [(0,0),(-2,0),(1,0),(-2,1),(1,-2)]]
 
+#it is used to determin whether the tetromino will collide with oterh blocks after roation.
 def collision(x, y):
         for i in range(len(x)):
             if x[i] < 0 or x[i] >= width or y[i] >= bottom or m[y[i]][x[i]]: 
                 return True
         return False
 
+#This function will constantly shift the tetromino and see what positions are available.
+# https://harddrop.com/wiki/SRS
 def collision_SRS(tetro, d):
     state = tetro.state
     name = tetro.name
